@@ -26,10 +26,10 @@ jobs:
         run: pip install flet-cli
 
       - name: Build iOS app
-        run: flet build ios --build-number 1
+        run: flet build ipa --build-number 1
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-            name: app-ios
-            path: build/ios/ipa/*.ipa
+          name: app-ios
+          path: build/ios/ipa/*.ipa
