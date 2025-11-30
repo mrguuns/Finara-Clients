@@ -1,0 +1,86 @@
+import flet as ft
+import asyncio
+
+from callbacks import fechar_menu_overlay, ativar_overlay
+
+def overlay_click_update(page: ft.Page):
+        overlay = status_overlay(page)
+        if overlay == "menu_overlay":
+            fechar_menu_overlay()
+        elif overlay == "pagina_adicionar_clientes":
+            fechar_overlay(page, page.pagina_adicionar_clientes)
+        else:
+            status = status_overlay(page)
+            print(f"Overlay ativo: {status}")
+
+
+
+def abrir_overlay(page: ft.Page, overlay):
+    """
+    Abre um overlay. Fecha qualquer overlay ativo antes.
+    Guarda referência no page.overlay_ativo e page.overlay_ativo_nome.
+    """
+    # Fecha overlay ativo, se houver
+    if getattr(page, "overlay_ativo", None):
+        if page.overlay_ativo_nome == "menu_overlay":
+            # page.overlay.remove(page.overlay_ativo)
+            fechar_overlay(page, page.overlay_ativo_nome)
+
+        fechar_overlay(page, page.overlay_ativo)
+
+    # Armazena a instância e o nome
+    page.overlay_ativo = overlay
+    page.overlay_ativo_nome = getattr(overlay, "_nome", "Sem nome")
+
+    # Adiciona à lista de overlays, se não estiver
+    if overlay not in page.overlay:
+        page.overlay.append(overlay)
+        ativar_overlay(1)
+
+    page.update()  # atualiza a interface
+
+
+
+def fechar_overlay(page: ft.Page, overlay):
+    """
+    Fecha o overlay se ele estiver ativo.
+    Atualiza referências no page.
+    """
+
+    ativo_nome = page.overlay_ativo_nome
+    ativo = getattr(page, "overlay_ativo", None)
+
+    # Só remove se for o overlay ativo
+    if ativo is overlay:
+        if overlay in page.overlay:
+            if ativo_nome == "menu_overlay":
+                fechar_menu_overlay()
+                page.overlay.remove(page.overlay_ativo)
+                ativar_overlay(0)
+            elif ativo_nome == "pagina_adicionar_clientes":
+                page.overlay.remove(ativo)
+                ativar_overlay(0)
+            else:
+                page.overlay.remove(ativo)
+                ativar_overlay(0)
+        page.overlay_ativo = None
+        page.overlay_ativo_nome = None
+        page.update()
+
+
+
+def status_overlay(page: ft.Page):
+    """
+    Retorna o nome do overlay ativo ou None.
+    """
+    return getattr(page, "overlay_ativo_nome", None)
+
+
+
+def overlay_callback(page: ft.Page):
+    """
+    Função de callback padrão para fechar o overlay.
+    Pode ser passada ao criar botões ou eventos.
+    """
+    ativo = getattr(page, "overlay_ativo", None)
+    fechar_overlay(page, ativo)
